@@ -1,19 +1,41 @@
+`gogo` takes a JSON stream as input. For each object in the stream, it expands a template, and run the result.
 
-Build commands from a JSON stream and run them, possibly in parallel.
+By default, the commands are run serially. With the `-c` flag, you can run the commands in parallel.
 
-In data.json:
+# Installation
+
+```
+go get github.com/hayeah/gogo
+```
+
+# Example
+
+Given a stream of json objects in data.json:
 
 ```
 {"foo": 1, "bar": "a string"}
 {"foo": 2, "bar": "another string"}
 ```
 
-The command is specified as a golang [text template](http://golang.org/pkg/text/template/):
+We can expand each of these with a Golang [text template](http://golang.org/pkg/text/template/):
 
 ```
-cat data.json > gogo 'echo {{.foo}} {{.bar}}'
+cat data.json | gogo 'echo foo is {{.foo}} and bar is "{{.bar}}"'
 ```
 
-# run processes concurrenty
+And it produces the output:
 
+```
+2014/11/28 22:07:44 run cmd: echo foo = 1, bar = "a string"
+foo = 1, bar = a string
+2014/11/28 22:07:44 run cmd: echo foo = 2, bar = "another string"
+foo = 2, bar = another string
+```
+
+# Run Processes Concurrently
+
+Use the `-c` flag.
+
+```
 gogo -c 3 Template
+```
