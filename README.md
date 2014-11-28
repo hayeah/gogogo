@@ -13,3 +13,7 @@ The command is specified as a golang [text template](http://golang.org/pkg/text/
 ```
 cat data.json > gogo 'echo {{.foo}} {{.bar}}'
 ```
+
+# run processes concurrenty
+
+gogo -c 3 Template
