@@ -20,7 +20,7 @@ Given a stream of json objects in data.json:
 We can expand each of these with a Golang [text template](http://golang.org/pkg/text/template/):
 
 ```
-cat data.json | gogo 'echo foo is {{.foo}} and bar is "{{.bar}}"'
+cat data.json | gogo 'echo foo = {{.foo}}, bar = "{{.bar}}"'
 ```
 
 And it produces the output:
