@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 	"text/template"
 	"time"
@@ -16,11 +17,13 @@ import (
 var cmdTemplate *template.Template
 var concurrentCount int
 var showHelp bool
+var evaluator string
 
 func init() {
 	var err error
-	flag.IntVar(&concurrentCount, "c", 1, "number of processes to run concurrently")
-	flag.BoolVar(&showHelp, "-h", false, "print usage")
+	flag.IntVar(&concurrentCount, "c", 1, "number of processes to run concurrently.")
+	flag.BoolVar(&showHelp, "h", false, "print usage.")
+	flag.StringVar(&evaluator, "e", "sh -c", "the program invokation to eval the command with.")
 
 	flag.Parse()
 	args := flag.Args()
@@ -43,7 +46,7 @@ func init() {
 
 func main() {
 	input := os.Stdin
-	runner := NewParallelRunner(concurrentCount)
+	runner := NewParallelRunner(concurrentCount, evaluator)
 
 	go processInput(input, runner)
 	go runner.Start()
@@ -93,13 +96,17 @@ type ParallelRunner struct {
 	// eofChan  chan error
 	runningCounts chan int
 	doneChan      chan bool
+
+	evaluatorArgs []string
 }
 
-func NewParallelRunner(concunrrency int) *ParallelRunner {
+func NewParallelRunner(concunrrency int, evaluator string) *ParallelRunner {
+
 	runner := &ParallelRunner{
 		cmdChan:       make(chan interface{}),
 		doneChan:      make(chan bool),
 		runningCounts: make(chan int, concunrrency),
+		evaluatorArgs: strings.Split(evaluator, " "),
 	}
 	return runner
 }
@@ -126,8 +133,7 @@ loop:
 			group.Add(1)
 			r.runningCounts <- 1 // block if currently running at paralleism capacity
 			go func() {
-				log.Printf("run cmd: %v", cmd)
-				runCommand(cmd)
+				r.exec(cmd)
 				<-r.runningCounts
 				group.Done()
 			}()
@@ -144,9 +150,11 @@ loop:
 	r.doneChan <- true
 }
 
-func runCommand(cmdString string) {
-	cmd := exec.Command("sh", "-c", cmdString)
-	cmd.Stdout = os.Stdout
-	cmd.Run()
-	// return
+func (r *ParallelRunner) exec(cmd string) {
+	args := append(r.evaluatorArgs, cmd)
+	log.Printf("exec: %v\n", args)
+	c := exec.Command(args[0], args[1:]...)
+	c.Stdout = os.Stdout
+	c.Run()
+
 }

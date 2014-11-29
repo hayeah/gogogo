@@ -32,6 +32,14 @@ foo = 1, bar = a string
 foo = 2, bar = another string
 ```
 
+# Changing the Command Evaluator
+
+By default the commands are evaluated with the program invokation `sh -c`. You can change it to something else using the `-e` flag. To use Ruby as the evaluator:
+
+```
+cat data.json | gogo -e "ruby -e" 'puts "hello {{.foo}} {{.bar}}"'
+```
+
 # Run Processes Concurrently
 
 Use the `-c` flag.
