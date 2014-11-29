@@ -26,14 +26,15 @@ func init() {
 	flag.StringVar(&evaluator, "e", "sh -c", "the program invokation to eval the command with.")
 
 	flag.Parse()
-	args := flag.Args()
-	if len(args) < 1 {
-		log.Fatalln("Need to specify command template as first argument")
-	}
 
 	if showHelp {
 		flag.PrintDefaults()
 		os.Exit(0)
+	}
+
+	args := flag.Args()
+	if len(args) < 1 {
+		log.Fatalln("Need to specify command template.")
 	}
 
 	cmdTemplateSource := args[0]
